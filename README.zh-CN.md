@@ -60,8 +60,8 @@ pmset -g assertions | grep Drip
 
 ### 直接下载
 
-1. 在 [最新 Release](https://github.com/imelonkid/drip/releases/latest) 下载 `Drip-vX.Y.Z.zip`。这是通用版，Apple 芯片和 Intel 都能用。
-2. 解压后把 `Drip.app` 拖进 `/Applications`。
+1. 在 [最新 Release](https://github.com/imelonkid/drip/releases/latest) 下载 `Drip-vX.Y.Z.dmg`。这是通用版，Apple 芯片和 Intel 都能用。
+2. 打开 DMG，把 **Drip** 拖到 **Applications** 文件夹上。
 3. Drip 没有经过苹果公证，第一次打开会被系统拦截。执行一次下面的命令解除隔离：
 
    ```bash

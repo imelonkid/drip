@@ -1,4 +1,4 @@
-# 推送 v* 标签时自动打包通用版（Apple 芯片 + Intel）Drip.app 并发布 Release
+# 推送 v* 标签时自动打包通用版（Apple 芯片 + Intel）Drip.dmg 并发布 Release
 #   git tag v1.0.0 && git push origin v1.0.0
 name: Release
 
@@ -23,13 +23,18 @@ jobs:
           lipo -archs build/Drip.app/Contents/MacOS/Drip
           codesign --verify --verbose build/Drip.app
 
-      - name: Package
-        run: ditto -c -k --keepParent build/Drip.app "Drip-${GITHUB_REF_NAME}.zip"
+      # DMG 里放 Drip.app 和一个指向 /Applications 的快捷方式，打开后拖进去即可安装
+      - name: Package DMG
+        run: |
+          mkdir -p dmg
+          cp -R build/Drip.app dmg/
+          ln -s /Applications dmg/Applications
+          hdiutil create -volname Drip -srcfolder dmg -ov -format UDZO "Drip-${GITHUB_REF_NAME}.dmg"
 
       - name: Publish release
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release create "$GITHUB_REF_NAME" "Drip-${GITHUB_REF_NAME}.zip" \
+          gh release create "$GITHUB_REF_NAME" "Drip-${GITHUB_REF_NAME}.dmg" \
             --title "Drip ${GITHUB_REF_NAME}" \
             --generate-notes

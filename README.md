@@ -60,8 +60,8 @@ pmset -g assertions | grep Drip
 
 ### Download
 
-1. Grab `Drip-vX.Y.Z.zip` from the [latest release](https://github.com/imelonkid/drip/releases/latest). It's a universal build that runs on Apple Silicon and Intel.
-2. Unzip it and move `Drip.app` to `/Applications`.
+1. Grab `Drip-vX.Y.Z.dmg` from the [latest release](https://github.com/imelonkid/drip/releases/latest). It's a universal build that runs on Apple Silicon and Intel.
+2. Open the DMG and drag **Drip** onto **Applications**.
 3. Drip isn't notarized by Apple, so macOS blocks it the first time. Clear the quarantine flag once:
 
    ```bash
