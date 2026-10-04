@@ -13,7 +13,7 @@ jobs:
   release:
     runs-on: macos-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Build universal app
         run: UNIVERSAL=1 VERSION="${GITHUB_REF_NAME#v}" ./build.sh
