@@ -1,0 +1,35 @@
+# 推送 v* 标签时自动打包通用版（Apple 芯片 + Intel）Drip.app 并发布 Release
+#   git tag v1.0.0 && git push origin v1.0.0
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build universal app
+        run: UNIVERSAL=1 VERSION="${GITHUB_REF_NAME#v}" ./build.sh
+
+      - name: Verify
+        run: |
+          lipo -archs build/Drip.app/Contents/MacOS/Drip
+          codesign --verify --verbose build/Drip.app
+
+      - name: Package
+        run: ditto -c -k --keepParent build/Drip.app "Drip-${GITHUB_REF_NAME}.zip"
+
+      - name: Publish release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" "Drip-${GITHUB_REF_NAME}.zip" \
+            --title "Drip ${GITHUB_REF_NAME}" \
+            --generate-notes

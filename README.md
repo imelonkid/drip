@@ -8,6 +8,7 @@
 
 One click. No Dock icon. Zero CPU when idle.
 
+[![Release](https://img.shields.io/github/v/release/imelonkid/drip?color=D9822B)](https://github.com/imelonkid/drip/releases/latest)
 [![macOS 13+](https://img.shields.io/badge/macOS-13%2B-000000?logo=apple&logoColor=white)](#requirements)
 [![Swift](https://img.shields.io/badge/Swift-5.9%2B-F05138?logo=swift&logoColor=white)](https://swift.org)
 [![SwiftUI](https://img.shields.io/badge/UI-SwiftUI-0A84FF)](https://developer.apple.com/xcode/swiftui/)
@@ -18,6 +19,12 @@ English · [简体中文](README.zh-CN.md)
 </div>
 
 ---
+
+<p align="center">
+  <img src="docs/screenshot.png" width="460" alt="Drip menu bar panel">
+  &nbsp;
+  <img src="docs/about.png" width="340" alt="About Drip">
+</p>
 
 ## Why Drip?
 
@@ -51,7 +58,21 @@ pmset -g assertions | grep Drip
 
 ## Installation
 
-Build from source. You only need the Xcode **Command Line Tools**, not the full Xcode:
+### Download
+
+1. Grab `Drip-vX.Y.Z.zip` from the [latest release](https://github.com/imelonkid/drip/releases/latest). It's a universal build that runs on Apple Silicon and Intel.
+2. Unzip it and move `Drip.app` to `/Applications`.
+3. Drip isn't notarized by Apple, so macOS blocks it the first time. Clear the quarantine flag once:
+
+   ```bash
+   xattr -dr com.apple.quarantine /Applications/Drip.app
+   ```
+
+   Or open it, then go to **System Settings → Privacy & Security** and click **Open Anyway**.
+
+### Build from source
+
+You only need the Xcode **Command Line Tools**, not the full Xcode:
 
 ```bash
 git clone https://github.com/imelonkid/drip.git
@@ -67,8 +88,8 @@ This builds a release binary, wraps it into `Drip.app`, ad-hoc signs it, copies 
 ## Requirements
 
 - macOS 13 Ventura or later
-- Apple Silicon or Intel (`build.sh` builds for the architecture of the Mac you run it on)
-- Xcode Command Line Tools (`xcode-select --install`)
+- Apple Silicon or Intel
+- To build from source: Xcode Command Line Tools (`xcode-select --install`)
 
 ## Project structure
 
@@ -82,6 +103,7 @@ drip/
 │   ├── Info.plist            # LSUIElement (no Dock icon)
 │   ├── AppIcon.icns
 │   └── make_icon.swift       # draws the app icon in code
+├── .github/workflows/        # tag v* → universal build → GitHub Release
 ├── build.sh                  # build, bundle, sign, install
 └── Package.swift
 ```
@@ -97,7 +119,7 @@ No. macOS always sleeps on lid close unless you're in clamshell mode, with exter
 <details>
 <summary><b>macOS says the app can't be opened.</b></summary>
 
-The app is ad-hoc signed, not notarized. If you build it yourself on your own Mac, it opens normally. If you copy the built app to another Mac, right-click it → **Open** the first time.
+Drip is ad-hoc signed, not notarized. A copy you build yourself opens normally. For a downloaded copy, run `xattr -dr com.apple.quarantine /Applications/Drip.app` once, or allow it under **System Settings → Privacy & Security → Open Anyway**.
 </details>
 
 <details>

@@ -8,6 +8,7 @@
 
 一键开关 · 不占 Dock · 空闲时零 CPU
 
+[![Release](https://img.shields.io/github/v/release/imelonkid/drip?color=D9822B)](https://github.com/imelonkid/drip/releases/latest)
 [![macOS 13+](https://img.shields.io/badge/macOS-13%2B-000000?logo=apple&logoColor=white)](#系统要求)
 [![Swift](https://img.shields.io/badge/Swift-5.9%2B-F05138?logo=swift&logoColor=white)](https://swift.org)
 [![SwiftUI](https://img.shields.io/badge/UI-SwiftUI-0A84FF)](https://developer.apple.com/xcode/swiftui/)
@@ -18,6 +19,12 @@
 </div>
 
 ---
+
+<p align="center">
+  <img src="docs/screenshot.png" width="460" alt="Drip 菜单栏面板">
+  &nbsp;
+  <img src="docs/about.png" width="340" alt="关于 Drip">
+</p>
 
 ## 为什么用 Drip？
 
@@ -51,7 +58,21 @@ pmset -g assertions | grep Drip
 
 ## 安装
 
-从源码构建，只需要 Xcode **命令行工具**，不用装完整的 Xcode：
+### 直接下载
+
+1. 在 [最新 Release](https://github.com/imelonkid/drip/releases/latest) 下载 `Drip-vX.Y.Z.zip`。这是通用版，Apple 芯片和 Intel 都能用。
+2. 解压后把 `Drip.app` 拖进 `/Applications`。
+3. Drip 没有经过苹果公证，第一次打开会被系统拦截。执行一次下面的命令解除隔离：
+
+   ```bash
+   xattr -dr com.apple.quarantine /Applications/Drip.app
+   ```
+
+   也可以先尝试打开，再到 **系统设置 → 隐私与安全性** 里点 **仍要打开**。
+
+### 从源码构建
+
+只需要 Xcode **命令行工具**，不用装完整的 Xcode：
 
 ```bash
 git clone https://github.com/imelonkid/drip.git
@@ -67,8 +88,8 @@ cd drip
 ## 系统要求
 
 - macOS 13 Ventura 及以上
-- Apple 芯片或 Intel（`build.sh` 按运行它的这台 Mac 的架构编译）
-- Xcode 命令行工具（`xcode-select --install`）
+- Apple 芯片或 Intel
+- 从源码构建需要：Xcode 命令行工具（`xcode-select --install`）
 
 ## 项目结构
 
@@ -82,6 +103,7 @@ drip/
 │   ├── Info.plist            # LSUIElement（不显示 Dock 图标）
 │   ├── AppIcon.icns
 │   └── make_icon.swift       # 用代码绘制应用图标
+├── .github/workflows/        # 推送 v* 标签 → 通用版构建 → 发布 Release
 ├── build.sh                  # 编译、打包、签名、安装
 └── Package.swift
 ```
@@ -97,7 +119,7 @@ drip/
 <details>
 <summary><b>提示无法打开应用？</b></summary>
 
-应用只做了本地签名，没有经过苹果公证。在自己的 Mac 上编译安装可以正常打开；如果把编译好的应用拷到别的 Mac，第一次打开时请右键 → **打开**。
+Drip 只做了本地签名，没有经过苹果公证。自己编译安装的可以正常打开；下载的版本请执行一次 `xattr -dr com.apple.quarantine /Applications/Drip.app`，或者在 **系统设置 → 隐私与安全性** 里点 **仍要打开**。
 </details>
 
 <details>
