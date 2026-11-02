@@ -1,0 +1,12 @@
+# PR 检查（开发发布平台 P4.1）：密钥扫描、运维规范、服务端冒烟、镜像构建。流水线本体在 imelonkid/melon-ci。
+# 自带读私有包 @imelonkid/* 的令牌（测试有 NODE_AUTH_TOKEN，镜像构建传 BuildKit secret npm_token），这里不用额外授权。
+# PR 一律以 main 为目标，不开叠加 PR。
+name: ci
+on:
+  pull_request:
+  push:
+    branches: [main]
+jobs:
+  check:
+    uses: imelonkid/melon-ci/.github/workflows/pr-check.yml@v2
+    # Drip 是原生 SwiftPM App：scripts/ci-test.sh 在 Linux 上只跑平台无关的检查与单测，不用 Node

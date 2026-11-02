@@ -1,3 +1,38 @@
-.build/
+# —— 密钥：一律不进 git，真实值在 1Password ——
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+id_rsa*
+id_ed25519*
+
+# —— 数据：线上数据只在服务器 data/，靠备份保护，不靠 git ——
+data/
+*.db
+*.db-wal
+*.db-shm
+*.sqlite
+*.sqlite3
+*.bak
+*.dump
+*.sql.gz
+
+# —— 构建产物与依赖 ——
+dist/
 build/
+node_modules/
+__pycache__/
+*.pyc
+.venv/
+
+# —— 本机 ——
 .DS_Store
+.idea/
+.vscode/
+*.log
+
+# —— Swift ——
+.build/
+.swiftpm/
