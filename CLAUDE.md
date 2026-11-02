@@ -20,11 +20,12 @@ bash scripts/ci-test.sh   # 和 PR 检查一样：脚本语法、Info.plist、Se
 
 ## 运维约定（melonkid 多云运维规范，原文在 `$OPS_REPO/docs/01-standard.md`）
 
-- 类型：桌面应用（独立客户端），不部署到服务器，不登记注册表。技术选型例外：原生 SwiftPM，不用 Electron（README「技术选型例外」）
+- 类型：桌面应用（独立客户端），不部署到服务器，不登记注册表。技术选型例外：原生 SwiftPM，不用 Electron（`docs/MAINTAINING.md`）
 - **发布只在内网门户上点**（GitHub「发布」表单兜底）：门禁 → 打 tag `vX.Y.Z` → 构建、签名、公证 → 上传对象存储 → GitHub Release。**本机不发版，Claude 不打 tag、不推 tag、不触发发布**；引导用户去门户，不给 `gh workflow run`
 - 版本号：修 bug → patch，新功能 → minor，不兼容 → major；构建时由 `scripts/package-desktop.sh` 注入，`Info.plist` 里的 `0.0.0` 是占位，不改
 - 新版只在 08–23 点发，窗口外勾「紧急变更」并补复盘；装出去的版本收不回来，有问题修复后发 patch
-- 密钥只在 GitHub production 环境与 1Password `ops/drip/prod`，由用户本人写入，Claude 不经手。增删改任何变量或 Secret：同步 README「GitHub production 环境」和运维仓库 `docs/10-env.md`
+- 密钥只在 GitHub production 环境与 1Password `ops/drip/prod`，由用户本人写入，Claude 不经手。增删改任何变量或 Secret：同步 `docs/MAINTAINING.md`「GitHub production 环境」和运维仓库 `docs/10-env.md`
+- **README（中英文）面向用户，只写产品本身**；发布、密钥、基线这些运维内容只放 `docs/MAINTAINING.md`，README 不引用它
 - 提交信息 `<类型>(<范围>): <中文描述>`；PR 一律以 `main` 为目标，不开叠加 PR
 - **PR 合并（或关闭）后这个分支就作废**：后续改动先 `git switch main && git pull`，再开新分支。已经在旧分支上提交了的，把新提交 `git cherry-pick` 到新分支再开 PR
 
