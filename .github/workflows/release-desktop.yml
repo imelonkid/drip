@@ -29,7 +29,7 @@ jobs:
       emergency: ${{ inputs.emergency }}
       # go-version: "<版本，与 go.mod 一致>"           # 构建要编译 Go 时打开（scripts/prebuild.sh 或 scripts/package-desktop.sh）
       # node-version: "22"                            # 构建用到的 Node 版本（默认 20）
-      runner: macos-15                                # 构建机（默认 macos-14 的 SDK 太旧：在新系统上按旧外观运行，没有液态玻璃，面板展开后不跟着变高）
+      runner: macos-26                                # 构建机（Xcode 26 / macOS 26 SDK）：SDK 旧了 App 会按旧外观运行——没有液态玻璃，面板展开后不跟着变高
       sign: true                                      # Developer ID 正式签名 + 公证（用户打开不再被系统拦截）；production 环境要
       #                                               # MACOS_CERT_P12_BASE64、MACOS_CERT_P12_PASSWORD、NOTARY_KEY_P8_BASE64、NOTARY_KEY_ID、NOTARY_ISSUER_ID
     secrets: inherit
