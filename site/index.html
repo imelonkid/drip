@@ -1,0 +1,330 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Drip · 让 Mac 保持清醒</title>
+<meta name="description" content="Drip 是一个住在菜单栏里的小咖啡杯：点一下，Mac 就不会自己睡着。免费、开源、轻量的 macOS 防休眠工具。">
+<link rel="icon" href="assets/icon.png">
+<link rel="apple-touch-icon" href="assets/icon.png">
+<meta property="og:title" content="Drip · 让 Mac 保持清醒">
+<meta property="og:description" content="住在菜单栏里的小咖啡杯：点一下，Mac 就能保持清醒。免费、开源、轻量。">
+<meta property="og:image" content="https://drip.melonkid.cn/assets/icon.png">
+<style>
+  :root {
+    color-scheme: light;
+    --paper: #FBF7F0;
+    --card: #FFFFFF;
+    --ink: #3A2A22;
+    --ink-2: #6E5D53;
+    --muted: #A2948A;
+    --line: #EDE4D6;
+    --accent: #D9822B;
+    --accent-ink: #B8661A;
+    --sky: #DCEAF4;
+    --mint: #DCEEE2;
+    --peach: #F8E4D2;
+    --butter: #F5ECCB;
+    --radius: 22px;
+    --font: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Helvetica Neue", sans-serif;
+    --mono: "SF Mono", ui-monospace, Menlo, Consolas, monospace;
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font: 16px/1.7 var(--font);
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: inherit; text-decoration: none; }
+  .wrap { max-width: 1040px; margin: 0 auto; padding: 0 24px; }
+
+  /* 导航 */
+  nav { display: flex; align-items: center; justify-content: space-between; height: 72px; }
+  .brand { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 19px; letter-spacing: .2px; }
+  .brand img { width: 30px; height: 30px; }
+  .links { display: flex; gap: 28px; font-size: 15px; color: var(--ink-2); }
+  .links a:hover { color: var(--accent-ink); }
+
+  /* 首屏 */
+  .hero { text-align: center; padding: 56px 0 40px; }
+  .hero-icon { width: 104px; height: 104px; animation: float 5s ease-in-out infinite; }
+  @keyframes float { 50% { transform: translateY(-6px); } }
+  .hero h1 { margin: 22px 0 10px; font-size: clamp(36px, 6vw, 56px); line-height: 1.15; letter-spacing: -.5px; }
+  .hero h1 em { font-style: normal; color: var(--accent); }
+  .hero p.lead { margin: 0 auto; max-width: 560px; font-size: 18px; color: var(--ink-2); }
+  .cta { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; margin: 30px 0 14px; }
+  .btn {
+    display: inline-flex; align-items: center; gap: 8px; height: 46px; padding: 0 22px;
+    border-radius: 999px; font-size: 15px; font-weight: 600; transition: transform .15s, background .15s;
+  }
+  .btn:hover { transform: translateY(-1px); }
+  .btn-primary { background: var(--ink); color: #FFF8EE; }
+  .btn-primary:hover { background: #2A1E18; }
+  .btn-ghost { border: 1.5px solid var(--line); background: var(--card); }
+  .btn svg { width: 18px; height: 18px; }
+  .meta { font-size: 13px; color: var(--muted); }
+  .meta span + span::before { content: "·"; margin: 0 8px; }
+  .meta span[hidden] + span::before { content: none; }   /* 版本号还没读到时，开头不留分隔点 */
+
+  /* 首屏演示：假的桌面 + 菜单栏 + 面板 */
+  .stage {
+    position: relative; margin: 44px auto 0; height: 420px; border-radius: var(--radius);
+    background: var(--sky); overflow: hidden;
+  }
+  .blob { position: absolute; border-radius: 50%; filter: blur(2px); }
+  .blob.b1 { width: 260px; height: 260px; background: #F6D9B8; left: 8%; top: 120px; }
+  .blob.b2 { width: 180px; height: 180px; background: #CFE6D6; right: 6%; top: 210px; }
+  .blob.b3 { width: 120px; height: 120px; background: #F2C9A6; right: 30%; top: 280px; }
+  .menubar {
+    position: absolute; inset: 0 0 auto 0; height: 34px; display: flex; align-items: center; justify-content: flex-end;
+    gap: 20px; padding: 0 20px; background: rgba(255,255,255,.55); backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px); font-size: 13px; font-weight: 500;
+  }
+  .menubar svg { width: 17px; height: 17px; display: block; }
+  .mb-cup { position: relative; padding: 3px 7px; border-radius: 6px; background: rgba(58,42,34,.12); }
+  .panel {
+    position: absolute; top: 44px; width: 290px; padding: 6px 0; border-radius: 16px; text-align: left;
+    background: rgba(255,255,255,.62); backdrop-filter: blur(22px) saturate(1.6); -webkit-backdrop-filter: blur(22px) saturate(1.6);
+    border: 1px solid rgba(255,255,255,.7); box-shadow: 0 18px 40px rgba(58,42,34,.16), 0 2px 6px rgba(58,42,34,.08);
+    font-size: 13px; user-select: none;
+  }
+  .p-row { display: flex; align-items: center; justify-content: space-between; padding: 8px 14px; }
+  .p-title { font-weight: 600; }
+  .p-sep { height: 1px; margin: 4px 10px; background: rgba(58,42,34,.1); }
+  .p-sub { color: var(--ink-2); font-size: 12px; padding-bottom: 2px; }
+  .p-sub b { font-weight: 500; font-variant-numeric: tabular-nums; }
+  .chips { display: flex; align-items: center; gap: 3px; padding: 4px 12px 10px; }
+  .chip {
+    width: 27px; height: 27px; border-radius: 50%; border: 0; background: none; padding: 0; cursor: pointer;
+    font: 600 11px var(--font); color: var(--ink);
+  }
+  .chip:hover { background: rgba(58,42,34,.08); }
+  .chip.on { background: var(--accent); color: #fff; }
+  .dot { width: 3px; height: 3px; border-radius: 50%; background: rgba(58,42,34,.25); margin: 0 2px; }
+  .switch { width: 40px; height: 24px; border-radius: 12px; background: rgba(58,42,34,.15); position: relative; cursor: pointer; border: 0; transition: background .2s; }
+  .switch::after { content: ""; position: absolute; top: 2px; left: 2px; width: 20px; height: 20px; border-radius: 50%; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.2); transition: transform .2s; }
+  .switch.on { background: var(--accent); }
+  .switch.on::after { transform: translateX(16px); }
+  .p-item { padding: 5px 14px; margin: 0 5px; border-radius: 6px; display: flex; justify-content: space-between; color: var(--ink); }
+  .p-item:hover { background: rgba(58,42,34,.07); }
+  .p-item i { font-style: normal; color: var(--muted); }
+  .hint { position: absolute; bottom: 18px; left: 0; right: 0; text-align: center; font-size: 13px; color: var(--ink-2); }
+
+  /* 区块标题 */
+  section { padding: 72px 0 8px; }
+  .eyebrow { color: var(--accent-ink); font-size: 13px; font-weight: 600; letter-spacing: 2px; }
+  h2 { margin: 6px 0 12px; font-size: clamp(26px, 4vw, 34px); line-height: 1.3; }
+  .sub { color: var(--ink-2); margin: 0 0 32px; max-width: 600px; }
+
+  /* 功能卡片 */
+  .grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+  .feat { background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 22px 20px; }
+  .feat svg { width: 34px; height: 34px; color: var(--ink); }
+  .feat h3 { margin: 12px 0 4px; font-size: 16px; }
+  .feat p { margin: 0; font-size: 14px; color: var(--ink-2); line-height: 1.6; }
+
+  /* 小贴士 */
+  .tip { background: var(--butter); border-radius: var(--radius); padding: 32px 36px; display: grid; grid-template-columns: 1fr 1fr; gap: 28px; align-items: center; }
+  .tip h3 { margin: 0 0 8px; font-size: 22px; }
+  .tip p { margin: 0; color: var(--ink-2); }
+  kbd { font: 600 13px var(--font); background: #fff; border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 6px; padding: 1px 7px; }
+  pre {
+    margin: 0; padding: 18px 20px; border-radius: 14px; background: #3A2A22; color: #F4ECDF;
+    font: 13px/1.7 var(--mono); overflow-x: auto;
+  }
+  pre .c { color: #B9A898; }
+
+  /* 底部下载 */
+  .final { text-align: center; padding: 88px 0 40px; }
+  .final img { width: 72px; height: 72px; }
+  .final h2 { margin-top: 14px; }
+  footer { border-top: 1px solid var(--line); padding: 24px 0 40px; font-size: 13px; color: var(--muted); display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
+  footer a:hover { color: var(--ink); }
+
+  @media (max-width: 860px) {
+    .grid { grid-template-columns: repeat(2, 1fr); }
+    .tip { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 560px) {
+    .wrap { padding: 0 16px; }
+    .links a:not(.gh) { display: none; }
+    .hero { padding-top: 32px; }
+    .grid { grid-template-columns: 1fr; }
+    .stage { height: 400px; }
+    .menubar { gap: 14px; padding: 0 12px; }
+    .menubar .hide-sm { display: none; }
+    .tip { padding: 24px 20px; }
+  }
+  @media (prefers-reduced-motion: reduce) { .hero-icon { animation: none; } }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <nav>
+    <a class="brand" href="#"><img src="assets/icon.png" alt="">Drip</a>
+    <div class="links">
+      <a href="#features">功能</a>
+      <a href="#download">下载</a>
+      <a class="gh" href="https://github.com/imelonkid/drip">GitHub</a>
+    </div>
+  </nav>
+
+  <header class="hero">
+    <img class="hero-icon" src="assets/icon.png" alt="Drip 图标">
+    <h1>让 Mac <em>保持清醒</em></h1>
+    <p class="lead">一个住在菜单栏里的精致小咖啡杯。点一下，Mac 就能保持清醒——编译、下载、远程会话等任务，都可以安心离开座位。</p>
+    <div class="cta">
+      <a class="btn btn-primary js-download" href="https://github.com/imelonkid/drip/releases/latest">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M16.4 12.6c0-2.4 2-3.6 2.1-3.7-1.1-1.7-2.9-1.9-3.5-1.9-1.5-.2-2.9.9-3.7.9-.8 0-1.9-.9-3.2-.8-1.6 0-3.1 1-4 2.4-1.7 3-.4 7.4 1.2 9.8.8 1.2 1.8 2.5 3 2.4 1.2 0 1.7-.8 3.1-.8 1.5 0 1.9.8 3.2.8 1.3 0 2.2-1.2 3-2.4.9-1.4 1.3-2.7 1.3-2.8 0 0-2.5-1-2.5-3.9zM14 5.4c.7-.8 1.1-1.9 1-3-1 0-2.1.7-2.8 1.5-.6.7-1.2 1.8-1 2.9 1.1.1 2.1-.6 2.8-1.4z"/></svg>
+        下载 macOS 版
+      </a>
+      <a class="btn btn-ghost" href="https://github.com/imelonkid/drip">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 .5a11.5 11.5 0 0 0-3.6 22.4c.6.1.8-.3.8-.6v-2c-3.2.7-3.9-1.5-3.9-1.5-.5-1.3-1.3-1.7-1.3-1.7-1-.7.1-.7.1-.7 1.2.1 1.8 1.2 1.8 1.2 1 1.8 2.7 1.3 3.4 1 .1-.8.4-1.3.7-1.6-2.6-.3-5.3-1.3-5.3-5.7 0-1.3.5-2.3 1.2-3.1-.1-.3-.5-1.5.1-3.1 0 0 1-.3 3.2 1.2a11 11 0 0 1 5.8 0c2.2-1.5 3.2-1.2 3.2-1.2.6 1.6.2 2.8.1 3.1.8.8 1.2 1.9 1.2 3.1 0 4.4-2.7 5.4-5.3 5.7.4.4.8 1.1.8 2.2v3.3c0 .3.2.7.8.6A11.5 11.5 0 0 0 12 .5z"/></svg>
+        GitHub 源码
+      </a>
+    </div>
+    <div class="meta"><span class="js-version" hidden></span><span>免费开源</span><span>macOS 13+</span><span>Apple 芯片</span><span>约 380 KB</span></div>
+
+    <!-- 可以点的演示 -->
+    <div class="stage" aria-label="Drip 菜单栏面板演示">
+      <div class="blob b1"></div><div class="blob b2"></div><div class="blob b3"></div>
+      <div class="menubar">
+        <span class="mb-cup" id="mbCup">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path id="cupBody" d="M5 9h11v3.5A4.5 4.5 0 0 1 11.5 17h-2A4.5 4.5 0 0 1 5 12.5z"/><path d="M16 10.5h1.2a2 2 0 0 1 0 4H16"/><path d="M3.5 20h15"/></svg>
+        </span>
+        <svg class="hide-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M2.5 9a14 14 0 0 1 19 0M5.5 12.5a9.5 9.5 0 0 1 13 0M8.5 16a5 5 0 0 1 7 0"/><circle cx="12" cy="19" r="1" fill="currentColor"/></svg>
+        <svg viewBox="0 0 28 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2" y="7" width="21" height="10" rx="3"/><rect x="4" y="9" width="14" height="6" rx="1.5" fill="currentColor" stroke="none"/><path d="M25 10.5v3" stroke-linecap="round"/></svg>
+        <span class="hide-sm">周二</span><span>9:41</span>
+      </div>
+
+      <div class="panel" id="panel">
+        <div class="p-row"><span class="p-title">保持唤醒</span><button class="switch on" id="sw" aria-label="保持唤醒"></button></div>
+        <div class="p-sep"></div>
+        <div class="p-row p-sub"><span>时长</span><b id="remain">剩余 0:45:00</b></div>
+        <div class="chips" id="chips">
+          <button class="chip" data-m="0">∞</button><span class="dot"></span>
+          <button class="chip" data-m="15">15</button><button class="chip" data-m="30">30</button><button class="chip on" data-m="45">45</button><span class="dot"></span>
+          <button class="chip" data-m="60">1h</button><button class="chip" data-m="240">4h</button><button class="chip" data-m="480">8h</button><button class="chip" data-m="720">12h</button>
+        </div>
+        <div class="p-sep"></div>
+        <div class="p-item">设置<i>›</i></div>
+        <div class="p-sep"></div>
+        <div class="p-item">关于 Drip</div>
+        <div class="p-item">退出</div>
+      </div>
+      <div class="hint">↑ 试着点一下开关和时长</div>
+    </div>
+  </header>
+
+  <section id="features">
+    <div class="eyebrow">FEATURES</div>
+    <h2>小，但刚好够用</h2>
+    <p class="sub">没有窗口、不占 Dock，需要的时候点一下菜单栏，不需要的时候它就安静地待着。</p>
+    <div class="grid">
+      <div class="feat">
+        <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 13h16v4.5a6.5 6.5 0 0 1-6.5 6.5h-3A6.5 6.5 0 0 1 6 17.5z"/><path d="M22 15h1.5a3 3 0 0 1 0 6H22"/><path d="M4 27.5h21"/><path d="M14 4.5c-1.6 2-1.6 3.4 0 5" stroke="#D9822B"/></svg>
+        <h3>一键开关</h3>
+        <p>轻轻一点就能开启，不需要繁杂操作。</p>
+      </div>
+      <div class="feat">
+        <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="16" cy="17.5" r="10"/><path d="M16 11.5v6l4 2.5"/><path d="M13 3.5h6" stroke="#D9822B"/></svg>
+        <h3>想醒多久就多久</h3>
+        <p>支持多种时长，∞、15 分钟到 12 小时，自由开启，到点恢复。</p>
+      </div>
+      <div class="feat">
+        <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="6" width="24" height="16" rx="3"/><path d="M12 27h8M16 22v5"/><path d="M19.6 16.2A4.4 4.4 0 1 1 15.4 9.8a3.4 3.4 0 0 0 4.2 6.4z" stroke="#D9822B"/></svg>
+        <h3>屏幕可以熄</h3>
+        <p>可以只阻止系统睡眠，让屏幕照常熄灭，锁屏后任务也不中断。</p>
+      </div>
+      <div class="feat">
+        <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4.5c-4 5-7 9-7 13a7 7 0 0 0 14 0c0-4-3-8-7-13z" stroke="#D9822B"/><path d="M13 19a3 3 0 0 0 3 3"/></svg>
+        <h3>轻得像一滴水</h3>
+        <p>约 380 KB，空闲时 CPU 为 0，不轮询、不联网（每 6 小时检查一次更新）。</p>
+      </div>
+    </div>
+  </section>
+
+
+  <section>
+    <div class="tip">
+      <div>
+        <h3>锁屏 ≠ 睡眠</h3>
+        <p>锁屏本身不会打断任何任务，真正让进程停下来的是系统睡眠。打开 Drip 后按 <kbd>⌃</kbd> <kbd>⌘</kbd> <kbd>Q</kbd> 锁屏，下载、编译、远程服务都会照常运行。</p>
+      </div>
+      <pre><span class="c"># 随时确认 Drip 是否在生效</span>
+pmset -g assertions | grep Drip</pre>
+    </div>
+  </section>
+
+  <section class="final" id="download">
+    <img src="assets/icon.png" alt="">
+    <h2>来一杯，让 Mac 保持清醒</h2>
+    <p class="sub" style="margin: 0 auto 26px">免费、开源（MIT），macOS 13 及以上，Apple 芯片。</p>
+    <div class="cta" style="margin-top:0">
+      <a class="btn btn-primary js-download" href="https://github.com/imelonkid/drip/releases/latest">下载 macOS 版</a>
+      <a class="btn btn-ghost" href="https://github.com/imelonkid/drip/releases">历史版本</a>
+    </div>
+  </section>
+
+  <footer>
+    <span>© 2026 melonkid · MIT License · <a href="https://beian.miit.gov.cn/" target="_blank" rel="noopener">京ICP备16017845号-2</a></span>
+    <span><a href="https://github.com/imelonkid/drip">GitHub</a> · <a href="https://github.com/imelonkid/drip/issues">反馈问题</a></span>
+  </footer>
+</div>
+
+<script>
+  // 下载按钮：读对象存储的版本清单，直接指向最新的 dmg；读不到（跨域未开、网络问题）就保持 GitHub Release
+  fetch('https://melon-download.oss-cn-beijing.aliyuncs.com/drip/desktop/latest.json', { cache: 'no-cache' })
+    .then(function (r) { return r.ok ? r.json() : Promise.reject(); })
+    .then(function (m) {
+      if (!m || !m.files || !m.files.arm64) return;
+      [].forEach.call(document.querySelectorAll('.js-download'), function (a) { a.href = m.files.arm64; });
+      var v = document.querySelector('.js-version'); v.textContent = '最新 v' + m.version; v.hidden = false;
+    })
+    .catch(function () {});
+
+  // 演示面板：开关、时长、倒计时（仅页面可见时走秒）
+  (function () {
+    var sw = document.getElementById('sw'), remain = document.getElementById('remain'),
+        chips = document.getElementById('chips'), cupBody = document.getElementById('cupBody'),
+        panel = document.getElementById('panel'), cup = document.getElementById('mbCup'),
+        stage = panel.parentElement, on = true, minutes = 45, left = 45 * 60;
+
+    function fmt(s) {
+      var h = Math.floor(s / 3600), m = Math.floor(s % 3600 / 60), x = s % 60;
+      return (h ? h + ':' + String(m).padStart(2, '0') : m) + ':' + String(x).padStart(2, '0');
+    }
+    function render() {
+      sw.classList.toggle('on', on);
+      cupBody.setAttribute('fill', on ? 'currentColor' : 'none');
+      [].forEach.call(chips.querySelectorAll('.chip'), function (c) {
+        c.classList.toggle('on', on && +c.dataset.m === minutes);
+      });
+      remain.textContent = !on ? '未开启' : minutes === 0 ? '无限期' : '剩余 ' + fmt(left);
+    }
+    function place() {  // 面板右上角对齐到菜单栏的咖啡杯下方
+      var s = stage.getBoundingClientRect(), c = cup.getBoundingClientRect();
+      var x = Math.min(Math.max(c.left - s.left + c.width / 2 - 40, 12), s.width - panel.offsetWidth - 12);
+      panel.style.left = x + 'px';
+    }
+    sw.onclick = function () { on = !on; left = minutes * 60; render(); };
+    chips.onclick = function (e) {
+      var c = e.target.closest('.chip'); if (!c) return;
+      minutes = +c.dataset.m; left = minutes * 60; on = true; render();
+    };
+    setInterval(function () {
+      if (document.hidden || !on || minutes === 0) return;
+      left = Math.max(0, left - 1);
+      if (left === 0) on = false;
+      render();
+    }, 1000);
+    window.addEventListener('resize', place);
+    render(); place();
+  })();
+</script>
+</body>
+</html>

@@ -6,8 +6,8 @@
 
 Claude 在本项目里只做下面「负责」的事；越界的需求先停下来和用户确认，不要顺手改到别的项目里。
 
-- **本项目负责**：App 本体（`Sources/Drip/`）——电源断言、定时、设置、登录启动、更新检查；图标（`Resources/make_icon.swift`）；打包与发布脚本（`scripts/`、`build.sh`）和两个 workflow 表单（`.github/workflows/`）
-- **本项目不负责**：发布流水线本体（→ melon-ci `desktop-release`）；基线模板与检查脚本（→ melon-skills `project-init`，基线缺的先改基线再用到这里）；门户登记、变量登记（→ melon-ops `portal/config.json`、`docs/10-env.md`）
+- **本项目负责**：App 本体（`Sources/Drip/`）——电源断言、定时、设置、登录启动、更新检查；图标（`Resources/make_icon.swift`）；打包与发布脚本（`scripts/`、`build.sh`）和两个 workflow 表单（`.github/workflows/`）；产品介绍页（`site/`，纯静态，线上 https://drip.melonkid.cn）与它的上传脚本 `scripts/deploy-site.sh`
+- **本项目不负责**：发布流水线本体（→ melon-ci `desktop-release`）；基线模板与检查脚本（→ melon-skills `project-init`，基线缺的先改基线再用到这里）；门户登记、变量登记（→ melon-ops `portal/config.json`、`docs/10-env.md`）；介绍页的反代、证书、DNS、探活和对象存储跨域（→ melon-ops `network/edge/tx-1/`、注册表、Gatus）
 - **与其他项目的关系**：没有代码依赖。发布调用 melon-ci `desktop-release@v2`；安装包和版本清单放对象存储 `drip/desktop/`（桶与端点登记在运维仓库）。**契约**：`latest.json` 的字段（`version`、`tag`、`date`、`notes`、`files.arm64`、`sha256.arm64`）只增不改——已装出去的客户端按它判断更新
 
 ## 运行
@@ -16,6 +16,7 @@ Claude 在本项目里只做下面「负责」的事；越界的需求先停下�
 ./build.sh                # 生成 build/Drip.app（版本号取最近的 tag）
 ./build.sh install        # 装到 /Applications 并启动
 bash scripts/ci-test.sh   # 和 PR 检查一样：脚本语法、Info.plist、SemVer 单测
+bash scripts/deploy-site.sh   # 发布介绍页：site/ 同步到 tx-1（先预览再确认；手动，不进 CI）
 ```
 
 ## 运维约定（melonkid 多云运维规范，原文在 `$OPS_REPO/docs/01-standard.md`）
