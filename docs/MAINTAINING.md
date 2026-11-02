@@ -37,12 +37,27 @@
 - [ ] 已登记到门户（运维仓库 `portal/config.json`），门户里能看到 Drip 并点发布
 - [ ] 第一次门户发布成功：安装包通过 Gatekeeper，`latest.json` 的 sha256 与安装包一致，装着上一版的电脑收到更新提示
 
-## 产品介绍页
+## 宣传页（产品介绍页）
 
-- 线上 https://drip.melonkid.cn ，源码 `site/`：纯静态（一个 HTML + 图标），不引用外部字体或 CDN，页脚有备案号（京ICP备16017845号-2）。
-- 托管在 tx-1：1Panel 的 OpenResty 直接出静态文件，目录 `/opt/1panel/www/sites/drip.melonkid.cn/index`，证书复用 `*.melonkid.cn` 通配证书。反代配置、注册表、探活都在运维仓库（`network/edge/tx-1/drip.melonkid.cn.conf`），本仓库只传文件。
-- 发布：本机 `bash scripts/deploy-site.sh`，先预览再确认，`--delete` 让线上和 `site/` 一致（页面全部来自 git，没有线上独有的内容）。改了 `site/` 先合进 main 再发，线上只放 main 上的版本。不改 App，所以不用发版、不升版本号。
+- 线上 https://drip.melonkid.cn ，源码 `site/`：纯静态（一个 HTML + 图标），不引用外部字体或 CDN，页脚有备案号（京ICP备16017845号-2）。按项目基线「静态宣传页」发布：不起容器、不走门户。
+- 托管在 tx-1：OpenResty 直接出静态文件，证书复用 `*.melonkid.cn` 通配证书。站点目录、反代配置、注册表、探活都在运维仓库（部署入口 `agent/services/tx-1/drip-page.conf`、反代 `network/edge/tx-1/drip.melonkid.cn.conf`）。
 - 不放在 `melonkid.cn/drip`：博客发布用 `rsync --delete` 整目录覆盖，子目录会被删掉。
+
+### 宣传页发布
+
+改了 `site/` 先走 PR 合进 main，再在已推送的干净 main 上发布（脚本会检查）：
+
+```bash
+PAGE_DEPLOY_SSH=tx-1-deploy bash scripts/deploy-page.sh patch|minor|major   # 打 page-vX.Y.Z、推到 GitHub、上线
+PAGE_DEPLOY_SSH=tx-1-deploy bash scripts/deploy-page.sh rollback [page-vX.Y.Z]   # 回到上一版（或指定版本），秒级
+PAGE_DEPLOY_SSH=tx-1-deploy bash scripts/deploy-page.sh status               # 线上版本、保留的版本、最近的发布记录
+```
+
+- 部署入口只上线 GitHub 上真实存在的 tag，从 GitHub 取这个 tag 里的 `site/`；本机传不进文件。
+- **谁能发**：只有在部署入口登记了钥匙的人（运维仓库 `agent/authorized/`）。`PAGE_DEPLOY_SSH` 是运维电脑 `~/.ssh/config` 里的别名，不写进仓库。由用户本人执行，Claude 不运行发布。
+- **tag 前缀 `page-v`，和桌面端的 `v` 各自独立**：`build.sh` 和桌面端发布只认 `v[0-9]*`，宣传页的 tag 不会被当成 App 版本；推 tag 也不触发 CI。改宣传页不用发 App、不升 App 版本号。
+- 页面约定（部署入口会检查）：`site/index.html` 必须有；`site/` 里不能有符号链接；图片放 `site/assets/`。
+- **缓存**：`site/assets/` 下的文件缓存 30 天，**换图要换文件名**（如 `icon-2.png`）并改引用，否则访客最长 30 天看到旧图；`index.html` 不缓存，发布即生效。
 - 中英双语：中文写在 HTML 里（无脚本也能看），英文文案在页面脚本的 `I18N.en`；默认跟随浏览器语言，右上角手动切换后记在 localStorage。改文案两边一起改。
 - 联系邮箱 imelonkid@163.com：源码里拆开写、运行时拼出 mailto，减少被爬虫收集。
 - 下载按钮：页面读对象存储的 `latest.json`，直接指向最新的 dmg；读不到时退回 GitHub Release。要读到，对象存储的桶要允许 `https://drip.melonkid.cn` 跨域 GET（运维侧配置）。
