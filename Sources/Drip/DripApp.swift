@@ -4,6 +4,10 @@ import SwiftUI
 struct DripApp: App {
     @StateObject private var model = CaffeineModel()
 
+    init() {
+        UpdateChecker.shared.start()
+    }
+
     var body: some Scene {
         MenuBarExtra {
             PanelView()

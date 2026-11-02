@@ -39,7 +39,8 @@
 - ⏳ **剩余时间**：打开面板就能看到实时倒计时。
 - 🖥️ **屏幕可选**：可以让屏幕保持常亮，也可以只阻止系统休眠，屏幕照常熄灭。
 - 🚀 **登录时启动**，也可以设置成打开应用时自动开启。
-- 🪶 **非常轻**：应用约 350 KB，没有后台轮询，没有第三方依赖。
+- 🔔 **新版提示**：有新版本时提示一次，点一下就能下载；也可以跳过某个版本。
+- 🪶 **非常轻**：应用约 380 KB，没有第三方依赖。后台唯一的动作是每 6 小时检查一次更新。
 
 ## 原理
 
@@ -60,15 +61,10 @@ pmset -g assertions | grep Drip
 
 ### 直接下载
 
-1. 在 [最新 Release](https://github.com/imelonkid/drip/releases/latest) 下载 `Drip-vX.Y.Z.dmg`。这是通用版，Apple 芯片和 Intel 都能用。
-2. 打开 DMG，把 **Drip** 拖到 **Applications** 文件夹上。
-3. Drip 没有经过苹果公证，第一次打开会被系统拦截。执行一次下面的命令解除隔离：
+1. 在 [最新 Release](https://github.com/imelonkid/drip/releases/latest) 下载 `.dmg` 安装包。
+2. 打开它，把 **Drip** 拖到 **Applications** 文件夹上。
 
-   ```bash
-   xattr -dr com.apple.quarantine /Applications/Drip.app
-   ```
-
-   也可以先尝试打开，再到 **系统设置 → 隐私与安全性** 里点 **仍要打开**。
+Drip 用 Developer ID 签名并经过苹果公证，双击就能正常打开。
 
 ### 从源码构建
 
@@ -88,7 +84,7 @@ cd drip
 ## 系统要求
 
 - macOS 13 Ventura 及以上
-- Apple 芯片或 Intel
+- Apple 芯片（arm64）
 - 从源码构建需要：Xcode 命令行工具（`xcode-select --install`）
 
 ## 项目结构
@@ -98,13 +94,20 @@ drip/
 ├── Sources/Drip/
 │   ├── DripApp.swift         # MenuBarExtra 入口
 │   ├── CaffeineModel.swift   # 电源断言、定时、设置
-│   └── PanelView.swift       # 菜单栏面板界面
+│   ├── PanelView.swift       # 菜单栏面板界面
+│   ├── UpdateChecker.swift   # 读 latest.json，提示新版本
+│   └── SemVer.swift          # 版本号比较（Linux 上也能单测）
 ├── Resources/
-│   ├── Info.plist            # LSUIElement（不显示 Dock 图标）
+│   ├── Info.plist            # LSUIElement（不显示 Dock 图标）；版本号构建时注入
 │   ├── AppIcon.icns
 │   └── make_icon.swift       # 用代码绘制应用图标
-├── .github/workflows/        # 推送 v* 标签 → 通用版构建 → 发布 Release
-├── build.sh                  # 编译、打包、签名、安装
+├── Tests/SemVer/             # SemVer 单测
+├── scripts/
+│   ├── package-desktop.sh    # 编译并组装 Drip.app（build.sh 和流水线共用）
+│   ├── release-desktop.sh    # 做 DMG、latest.json、上传（流水线调用）
+│   └── ci-test.sh            # PR 检查
+├── .github/workflows/        # PR 检查、发布流水线
+├── build.sh                  # 本机构建与安装
 └── Package.swift
 ```
 
@@ -119,7 +122,7 @@ drip/
 <details>
 <summary><b>提示无法打开应用？</b></summary>
 
-Drip 只做了本地签名，没有经过苹果公证。自己编译安装的可以正常打开；下载的版本请执行一次 `xattr -dr com.apple.quarantine /Applications/Drip.app`，或者在 **系统设置 → 隐私与安全性** 里点 **仍要打开**。
+v1.1.0 起的安装包都经过公证，可以直接打开。更早的 v1.0.x 没有公证：删掉它，安装最新版即可。
 </details>
 
 <details>
@@ -131,6 +134,10 @@ Drip 只做了本地签名，没有经过苹果公证。自己编译安装的可
 ## 参与贡献
 
 欢迎提 Issue 和 PR。Drip 会刻意保持小巧，能让它保持简单、轻量的改动最容易被合并。
+
+## 维护
+
+发布与回滚、GitHub production 环境、技术选型例外、上线准入和已知限制，见英文 README 末尾的 [维护（项目基线）](README.md#维护项目基线)。
 
 ## 许可证
 

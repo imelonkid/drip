@@ -1,0 +1,35 @@
+# 发布桌面应用（项目基线 · 桌面应用）：Actions →「发布」→ Run workflow，选 patch / minor / major。
+# 门禁（08–23 点、main 的 CI 全绿）→ 打 tag vX.Y.Z → macOS 构建 dmg → 安装包与版本清单上传对象存储 → GitHub Release 存档。
+# 已安装的客户端读版本清单，提示新版本。流水线本体在 imelonkid/melon-ci（desktop-release，manifest: oss）。
+name: 发布
+run-name: "发布 · ${{ inputs.bump }}${{ inputs.emergency && ' · 紧急变更' || '' }}"
+concurrency:
+  group: ${{ github.repository }}-desktop-release
+  cancel-in-progress: false
+on:
+  workflow_dispatch:
+    inputs:
+      bump:
+        description: 版本号怎么升
+        type: choice
+        options: [patch, minor, major]
+        default: patch
+      emergency:
+        description: 紧急变更（允许 08–23 点之外发布，24 小时内补复盘）
+        type: boolean
+        default: false
+jobs:
+  release:
+    permissions: { contents: write, checks: read }   # 打 tag、查 CI、建 Release
+    uses: imelonkid/melon-ci/.github/workflows/desktop-release.yml@v2
+    with:
+      tag-prefix: v
+      manifest: oss                                   # 没有服务端：版本清单也放对象存储
+      bump: ${{ inputs.bump }}
+      emergency: ${{ inputs.emergency }}
+      # go-version: "<版本，与 go.mod 一致>"           # 构建要编译 Go 时打开（scripts/prebuild.sh 或 scripts/package-desktop.sh）
+      # node-version: "22"                            # 构建用到的 Node 版本（默认 20）
+      # runner: macos-15                              # 构建机（默认 macos-14）：原生 App 要 SwiftPM 6 / macOS 15 SDK 时打开
+      sign: true                                      # Developer ID 正式签名 + 公证（用户打开不再被系统拦截）；production 环境要
+      #                                               # MACOS_CERT_P12_BASE64、MACOS_CERT_P12_PASSWORD、NOTARY_KEY_P8_BASE64、NOTARY_KEY_ID、NOTARY_ISSUER_ID
+    secrets: inherit
