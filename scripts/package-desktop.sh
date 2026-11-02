@@ -38,4 +38,4 @@ else
   codesign --force --sign - "$APP"
 fi
 codesign --verify --strict "$APP"
-echo "▸ 已打包 $APP（${VER}，$(du -sh "$APP" | cut -f1)，签名：${SIGN_IDENTITY:-ad-hoc}）"
+echo "▸ 已打包 ${APP}（${VER}，$(du -sh "$APP" | cut -f1)，签名：${SIGN_IDENTITY:-ad-hoc}）"
