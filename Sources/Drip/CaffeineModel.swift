@@ -89,7 +89,9 @@ final class CaffeineModel: ObservableObject {
         let end = Date().addingTimeInterval(TimeInterval(minutes * 60))
         endDate = end
         let t = Timer(fire: end, interval: 0, repeats: false) { [weak self] _ in
-            Task { @MainActor in self?.stop() }
+            // 先解包成常量再交给 Task：Swift 5.10（构建机 macos-14）不允许并发代码捕获可变的弱引用
+            guard let self else { return }
+            Task { @MainActor in self.stop() }
         }
         t.tolerance = 5
         RunLoop.main.add(t, forMode: .common)

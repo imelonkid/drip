@@ -1,0 +1,12 @@
+# 临时：在发布流水线同款构建机（macos-14）上验证能编译打包；合并前删除
+name: tmp-verify-macos14
+on:
+  push:
+    branches: [fix/swift510-timer-capture]
+jobs:
+  build:
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v5
+      - run: swift --version
+      - run: bash scripts/package-desktop.sh 0.0.0 v0.0.0 "$RUNNER_TEMP/out"
