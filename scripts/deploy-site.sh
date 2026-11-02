@@ -17,13 +17,13 @@ if [[ -n "$(git status --porcelain -- site)" ]]; then
 fi
 
 ssh "$HOST" "test -d '$DIR'" || {
-  echo "✗ $HOST 上没有 $DIR：先在运维仓库下发 drip.melonkid.cn 的反代并建好目录" >&2
+  echo "✗ ${HOST} 上没有 ${DIR}：先在运维仓库下发 drip.melonkid.cn 的反代并建好目录" >&2
   exit 1
 }
 
 RSYNC=(rsync -rltz --delete --chmod=D755,F644 --exclude .DS_Store site/ "$HOST:$DIR/")
 
-echo "▸ 预览（$HOST:$DIR）"
+echo "▸ 预览（${HOST}:${DIR}）"
 "${RSYNC[@]}" --dry-run --itemize-changes
 if [[ "${1:-}" != "--yes" ]]; then
   read -r -p "确认上传？[y/N] " ok
