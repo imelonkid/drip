@@ -43,6 +43,8 @@
 - 托管在 tx-1：1Panel 的 OpenResty 直接出静态文件，目录 `/opt/1panel/www/sites/drip.melonkid.cn/index`，证书复用 `*.melonkid.cn` 通配证书。反代配置、注册表、探活都在运维仓库（`network/edge/tx-1/drip.melonkid.cn.conf`），本仓库只传文件。
 - 发布：本机 `bash scripts/deploy-site.sh`，先预览再确认，`--delete` 让线上和 `site/` 一致（页面全部来自 git，没有线上独有的内容）。改了 `site/` 先合进 main 再发，线上只放 main 上的版本。不改 App，所以不用发版、不升版本号。
 - 不放在 `melonkid.cn/drip`：博客发布用 `rsync --delete` 整目录覆盖，子目录会被删掉。
+- 中英双语：中文写在 HTML 里（无脚本也能看），英文文案在页面脚本的 `I18N.en`；默认跟随浏览器语言，右上角手动切换后记在 localStorage。改文案两边一起改。
+- 联系邮箱 imelonkid@163.com：源码里拆开写、运行时拼出 mailto，减少被爬虫收集。
 - 下载按钮：页面读对象存储的 `latest.json`，直接指向最新的 dmg；读不到时退回 GitHub Release。要读到，对象存储的桶要允许 `https://drip.melonkid.cn` 跨域 GET（运维侧配置）。
 
 ## 已知限制
